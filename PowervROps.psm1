@@ -5,6 +5,21 @@
 # | Description: PowerShell module that enables the use of the vROPs API via PowerShell cmdlets								   |
 # | Version: 0.4.1                                                                                              		   |
 # |----------------------------------------------------------------------------------------------------------------------------|
+################################################
+# Adding certificate exception to prevent API errors
+################################################
+add-type @"
+    using System.Net;
+    using System.Security.Cryptography.X509Certificates;
+    public class TrustAllCertsPolicy : ICertificatePolicy {
+        public bool CheckValidationResult(
+            ServicePoint srvPoint, X509Certificate certificate,
+            WebRequest request, int certificateProblem) {
+            return true;
+        }
+    }
+"@
+[System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 
 function getTimeSinceEpoch {
 	<#
@@ -179,7 +194,7 @@ function invokeRestMethod {
 				}
 				Catch {
 					
-			return $_.Exception.Message
+			return $_.Exception
 				}	
 			}
 			else {
@@ -605,6 +620,28 @@ function acquireToken {
 }
 
 # /api/collectorgroups --------------------------------------------------------------------------------------------------------
+#tim
+
+function getCollectorGroups {
+Param	(
+	[parameter(Mandatory=$false)]$credentials,
+	[parameter(Mandatory=$true)][String]$resthost,
+	[parameter(Mandatory=$false)]$token,
+	[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+	[parameter(Mandatory=$true)]$collectorid
+)
+
+$url = 'https://' + $resthost + '/suite-api/api/collectorgroups/'
+
+if ($token -ne $null) {
+	$getCollectorGroups = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+}
+else {
+	$getCollectorGroups = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+}	
+return $getCollectorGroups
+}
+
 
 # /api/collectors -------------------------------------------------------------------------------------------------------------
 
