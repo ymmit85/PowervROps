@@ -5,6 +5,15 @@
 # | Description: PowerShell module that enables the use of the vROPs API via PowerShell cmdlets								   |
 # | Version: 0.4.1                                                                                              		   |
 # |----------------------------------------------------------------------------------------------------------------------------|
+<#2018 Update
+Updated /api/collectorgroups
+Added getSymptomDefinitions tested
+getserviceinfo tested
+getservicesinfo tested
+getauthsources tested
+getauthsource tested
+#>
+
 ################################################
 # Adding certificate exception to prevent API errors
 ################################################
@@ -56,9 +65,10 @@ function getTimeSinceEpoch {
 			$referencetime = $date.ToUniversalTime()
 		}
 		$timesinceepoch = [math]::floor(($referencetime - $epoch).TotalMilliseconds)
-		return $timesinceepoch	
+		return $timesinceepoch
 	}
 }
+
 function setRestHeaders {
 	<#
 		.SYNOPSIS
@@ -347,6 +357,51 @@ function enumerateAdapterInstances {
 	}
 }
 
+function getAdapterInstance {
+	<#
+		.SYNOPSIS
+			Look up a single adapter instance using an identifier.
+		.DESCRIPTION
+			Look up a single adapter instance using an identifier.
+			Returns a specific adapter instance identified by the specified UUID. 
+		.EXAMPLE
+			getAdapterInstance -resthost $resthost -token $token -adapterID 300fd432-9975-4aaa-ac3e-0438b28cf58e
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER adapterID
+			The name of the adapter type to filter
+		.NOTES
+			Added in version 0.2
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$false)][switch]$ignoressl,
+		[parameter(Mandatory=$false)]$adapterID
+		)
+	Process {
+			$url = 'https://' + $resthost + '/suite-api/api/adapters/' + $adapterID
+
+		if ($token -ne $null) {
+			$getAdapterInstanceResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getAdapterInstanceResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getAdapterInstanceResponse
+	}
+}
+
 # /api/alertdefinitions -------------------------------------------------------------------------------------------------------
 	
 function getAlertDefinitionById {
@@ -391,6 +446,7 @@ function getAlertDefinitionById {
 	return $getAlertDefinitionByIdresponse
 
 }	
+
 function getAlertDefinitions {
 	<#
 		.SYNOPSIS
@@ -619,8 +675,87 @@ function acquireToken {
 	}
 }
 
+function getAuthSources {
+	<#
+		.SYNOPSIS
+			Lists all the available auth sources in the system. . 
+		.DESCRIPTION
+			Lists all the available auth sources in the system. . 
+		.EXAMPLE
+			getAuthSources -resthost $resthost -credentials $credentials
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.NOTES
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/auth/sources'
+		if ($token -ne $null) {
+			$getAuthSourcesResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getAuthSourcesResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getAuthSourcesResponse
+	}
+}
+
+function getAuthSource {
+	<#
+		.SYNOPSIS
+			Retrieve information about a particular authentication source. 
+		.DESCRIPTION
+			Retrieve information about a particular authentication source. 
+		.EXAMPLE
+			getAuthSource -resthost $resthost -credentials $credentials -sourceID $sourceID
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER sourceID
+			Source ID of the Authentication Source.
+
+		.NOTES
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$true)][String]$sourceID,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/auth/sources/' + $sourceID
+		if ($token -ne $null) {
+			$getAuthSourceResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getAuthSourceResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getAuthSourceResponse
+	}
+}
+
 # /api/collectorgroups --------------------------------------------------------------------------------------------------------
-#tim
 
 function getCollectorGroups {
 Param	(
@@ -808,6 +943,86 @@ function getCredentials {
 }
 
 # /api/deployment -------------------------------------------------------------------------------------------------------------
+function getServicesInfo {
+	<#
+		.SYNOPSIS
+			Gets the health of all Services.
+		.DESCRIPTION
+			Gets the health of all Services.
+		.EXAMPLE
+			getServicesInfo -resthost $resthost -credentials $vropscreds
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.NOTES
+			Added in version 0.3.5
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/deployment/node/services/info'
+		if ($token -ne $null) {
+			$getServicesInfoResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getServicesInfoResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getServicesInfoResponse
+	}
+}
+
+function getServiceInfo {
+	<#
+		.SYNOPSIS
+			Gets information about a specific Service that is part of the vRealize Operations Manager stack..
+		.DESCRIPTION
+			Gets information about a specific Service that is part of the vRealize Operations Manager stack..
+		.EXAMPLE
+			getServiceInfo -resthost $resthost -credentials $vropscreds -service
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER name
+			Name of service to recieve details for.
+		.NOTES
+			Added in version 0.3.5
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$name,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/deployment/node/services/' + $name + '/info'
+		if ($token -ne $null) {
+			$getServicesInfoResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getServicesInfoResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getServicesInfoResponse
+	}
+}
 
 function getLicenceKeysForProduct {
 	<#
@@ -2094,6 +2309,78 @@ function getSuperMetrics {
 }
 
 # /api/symptomdefinitions -----------------------------------------------------------------------------------------------------
+function getSymptomDefinitions {
+	<#
+		.SYNOPSIS
+			Returns a collection of Alert Definitions matching the search criteria specified.
+		.DESCRIPTION
+			Returns a collection of Alert Definitions matching the search criteria specified.
+		.EXAMPLE
+			getAlertDefinitions -resthost $resthost -token $token
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER alertdefinitionid
+			The identifier(s) of the Alert Definitions to search for.
+			Do not specify adapterKind or resourceKind if searching by the identifier
+		.PARAMETER adapterkind
+			Adapter Kind key of the Alert Definitions to search for
+		.PARAMETER resourcekind
+			Resource Kind key of the Alert Definitions to search for
+		.NOTES
+			Added in version 0.2
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$false)][String]$symptomdefinitionid,
+		[parameter(Mandatory=$false)][String]$adapterkind,
+		[parameter(Mandatory=$false)][switch]$ignoressl,
+		[parameter(Mandatory=$false)][String]$resourcekind
+		)
+	Process {
+		if (($symptomdefinitionid -ne "") -and (($adapterkind -ne "") -or ($resourcekind -ne ""))) {
+			write-host "symptomdefinition" $alertdefintion
+			write-host "WARNING - When specifying an symptom definition ID, an adapterkind or resourcekind are not necessary"
+			return
+		}
+		else {
+			if ($symptomdefinitionid -ne "") {
+				$url = 'https://' + $resthost + '/suite-api/api/symptomdefinitions/?id=' + $symptomdefinitionid
+			}
+			elseif ($adapterkind -ne "") {
+				if ($resourcekind -ne "") {
+					$url = 'https://' + $resthost + '/suite-api/api/symptomdefinitions/?adapterKind=' + $adapterkind + '&resourceKind=' + $resourcekind 
+				}
+				else {
+					$url = 'https://' + $resthost + '/suite-api/api/symptomdefinitions/?adapterKind=' + $adapterkind
+				}
+			}
+			elseif ($resourcekind -ne "") {
+				$url = 'https://' + $resthost + '/suite-api/api/symptomdefinitions/?resourceKind=' + $resourcekind 
+			}
+			else {
+				$url = 'https://' + $resthost + '/suite-api/api/symptomdefinitions'
+			}
+			if ($token -ne $null) {
+				$getSymptomDefinitionsresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+			}
+			else {
+				$getSymptomDefinitionsresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+			}	
+			return $getSymptomDefinitionsresponse
+		}
+	}
+}
 
 # /api/symptoms ---------------------------------------------------------------------------------------------------------------
 
@@ -2357,6 +2644,7 @@ Param	(
 		return $modifyCustomGroupresponse
 }
 }
+
 export-modulemember -function 'get*'
 export-modulemember -function 'Create*'
 export-modulemember -function 'add*'
