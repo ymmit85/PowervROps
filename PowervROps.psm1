@@ -12,6 +12,7 @@ getserviceinfo tested
 getservicesinfo tested
 getauthsources tested
 getauthsource tested
+
 #>
 
 ################################################
@@ -763,7 +764,7 @@ Param	(
 	[parameter(Mandatory=$true)][String]$resthost,
 	[parameter(Mandatory=$false)]$token,
 	[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
-	[parameter(Mandatory=$true)]$collectorid
+	[parameter(Mandatory=$false)]$collectorid
 )
 
 $url = 'https://' + $resthost + '/suite-api/api/collectorgroups/'
