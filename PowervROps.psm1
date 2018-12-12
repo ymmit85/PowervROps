@@ -756,6 +756,48 @@ function getAuthSource {
 	}
 }
 
+function getRoles {
+	<#
+		.SYNOPSIS
+			Retrieve information about a particular authentication source. 
+		.DESCRIPTION
+			Retrieve information about a particular authentication source. 
+		.EXAMPLE
+			getAuthSource -resthost $resthost -credentials $credentials -sourceID $sourceID
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER sourceID
+			Source ID of the Authentication Source.
+
+		.NOTES
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][String]$roleName,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/auth/roles/'
+		if ($token -ne $null) {
+			$getRolesResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getRolesResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getRolesResponse
+	}
+}
+
 # /api/collectorgroups --------------------------------------------------------------------------------------------------------
 
 function getCollectorGroups {
