@@ -676,6 +676,39 @@ function acquireToken {
 	}
 }
 
+function releaseToken {
+	<#
+		.SYNOPSIS
+			Call this URL to terminate the current sessionId.  
+		.DESCRIPTION
+			Call this URL to terminate the current sessionId.  
+		.EXAMPLE
+			releaseToken -resthost $resthost -token $token
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+
+		.NOTES
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/auth/token/release' 
+		$getAuthSourceResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		return $getAuthSourceResponse
+	}
+}
+
+
 function getAuthSources {
 	<#
 		.SYNOPSIS
@@ -837,6 +870,44 @@ function getUsers {
 	}
 }
 
+function getUserGroups {
+	<#
+		.SYNOPSIS
+			Retrieve a list of local user groups using identifiers or names or all.. If none of the parameters are specified, all the user groups in the system are returned.  
+		.DESCRIPTION
+			Retrieve a list of local user groups using identifiers or names or all.. If none of the parameters are specified, all the user groups in the system are returned.  
+		.EXAMPLE
+			getUserGroups -resthost $resthost -credentials $credentials
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+
+		.NOTES
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/auth/usergroups/'
+		if ($token -ne $null) {
+			$getUserGroupsResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getUserGroupsResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getUserGroupsResponse
+	}
+}
 
 # /api/collectorgroups --------------------------------------------------------------------------------------------------------
 
