@@ -358,7 +358,7 @@ function enumerateAdapterInstances {
 	}
 }
 
-function getAdapterInstance {
+function getAdapterInstances {
 	<#
 		.SYNOPSIS
 			Look up a single adapter instance using an identifier.
@@ -366,7 +366,104 @@ function getAdapterInstance {
 			Look up a single adapter instance using an identifier.
 			Returns a specific adapter instance identified by the specified UUID. 
 		.EXAMPLE
-			getAdapterInstance -resthost $resthost -token $token -adapterID 300fd432-9975-4aaa-ac3e-0438b28cf58e
+			getAdapterInstances -resthost $resthost -token $token -adapterID
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER adapterID
+			The name of the adapter ID to filter.
+		.NOTES
+			Added in version 0.2
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$false)][switch]$ignoressl,
+		[parameter(Mandatory=$false)]$adapterID
+		)
+	Process {
+
+			$url = 'https://' + $resthost + '/suite-api/api/adapters/' + $adapterID
+
+		if ($token -ne $null) {
+			$getAdapterInstancesresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getAdapterInstancesresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getAdapterInstancesresponse
+	}
+}
+
+
+function setAdapterInMaintenance {
+	<#
+		.SYNOPSIS
+			Place specified Adapter into maintenance.
+		.DESCRIPTION
+			Marks the adapter instance as being 'maintained' for the given duration.
+			After the duration expires, the adapter instance state is automatically set to 'STARTED'		 
+		.EXAMPLE
+			setAdapterInMaintenance -resthost $resthost -token $token -adapterID 300fd432-9975-4aaa-ac3e-0438b28cf58e -duration '5'
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER adapterID
+			The name of the adapter type to filter
+		.PARAMETER minutes
+			Duration of maintenance window in mintes,
+		.NOTES
+			Added in version 0.2
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$false)][switch]$ignoressl,
+		[parameter(Mandatory=$true)]$adapterID,
+		[parameter(Mandatory=$true)]$minutes
+
+		)
+	Process {
+			$url = 'https://' + $resthost + '/suite-api/api/adapters/' + $adapterID + '/maintained/?duration=' + $minutes
+
+		if ($token -ne $null) {
+			$setAdapterInMaintenanceResponse = invokeRestMethod -method 'PUT' -url $url -accept $accept -token $token
+		}
+		else {
+			$setAdapterInMaintenanceResponse = invokeRestMethod -method 'PUT' -url $url -accept $accept -credentials $credentials
+		}	
+		return $setAdapterInMaintenanceResponse
+	}
+}
+
+
+function setAdapterEndMaintenance {
+	<#
+		.SYNOPSIS
+			Removes specified Adapter from maintenance.
+		.DESCRIPTION
+			Marks the adapter instance as being 'started'. 
+			Removes the adapter instance from being in an maintenance window. The adapter instance will be notified to start collection process immediately.		 
+		.EXAMPLE
+			setAdapterEndMaintenance -resthost $resthost -token $token -adapterID 300fd432-9975-4aaa-ac3e-0438b28cf58e
 		.PARAMETER credentials
 			A set of PS Credentials used to authenticate against the vROps endpoint.
 		.PARAMETER token
@@ -388,18 +485,107 @@ function getAdapterInstance {
 		[parameter(Mandatory=$true)][String]$resthost,
 		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
 		[parameter(Mandatory=$false)][switch]$ignoressl,
-		[parameter(Mandatory=$false)]$adapterID
+		[parameter(Mandatory=$true)]$adapterID
 		)
 	Process {
-			$url = 'https://' + $resthost + '/suite-api/api/adapters/' + $adapterID
+			$url = 'https://' + $resthost + '/suite-api/api/adapters/' + $adapterID + '/maintained'
 
 		if ($token -ne $null) {
-			$getAdapterInstanceResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+			$setAdapterEndMaintenanceResponse = invokeRestMethod -method 'DELETE' -url $url -accept $accept -token $token
 		}
 		else {
-			$getAdapterInstanceResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+			$setAdapterEndMaintenanceResponse = invokeRestMethod -method 'DELETE' -url $url -accept $accept -credentials $credentials
 		}	
-		return $getAdapterInstanceResponse
+		return $setAdapterEndMaintenanceResponse
+	}
+}
+
+function setAdapterStartMonitoring {
+	<#
+		.SYNOPSIS
+			Starts the adapter instance from monitoring its resources.
+		.DESCRIPTION
+			Starts the adapter instance from monitoring its resources.		
+		.EXAMPLE
+			setAdapterStartMonitoring -resthost $resthost -token $token -adapterID 300fd432-9975-4aaa-ac3e-0438b28cf58e
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER adapterID
+			The name of the adapter type to filter
+		.NOTES
+
+		#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$false)][switch]$ignoressl,
+		[parameter(Mandatory=$true)]$adapterID
+		)
+
+	Process {
+			$url = 'https://' + $resthost + '/suite-api/api/adapters/' + $adapterId + '/monitoringstate/start'
+
+		if ($token -ne $null) {
+			$setAdapterStartMonitoringResponse = invokeRestMethod -method 'PUT' -url $url -accept $accept -token $token
+		}
+		else {
+			$setAdapterStartMonitoringResponse = invokeRestMethod -method 'PUT' -url $url -accept $accept -credentials $credentials
+		}	
+		return $setAdapterStartMonitoringResponse
+	}
+}
+
+function setAdapterStopMonitoring {
+	<#
+		.SYNOPSIS
+			Stops the adapter instance from monitoring its resources.
+		.DESCRIPTION
+			Stops the adapter instance from monitoring its resources.
+		.EXAMPLE
+			setAdapterStopMonitoring -resthost $resthost -token $token -adapterID 300fd432-9975-4aaa-ac3e-0438b28cf58e
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER adapterID
+			The name of the adapter type to filter
+		.NOTES
+
+		#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$false)][switch]$ignoressl,
+		[parameter(Mandatory=$true)]$adapterID
+		)
+	Process {
+			$url = 'https://' + $resthost + '/suite-api/api/adapters/' + $adapterId + '/monitoringstate/stop'
+
+		if ($token -ne $null) {
+			$setAdapterStopMonitoringResponse = invokeRestMethod -method 'PUT' -url $url -accept $accept -token $token
+		}
+		else {
+			$setAdapterStopMonitoringResponse = invokeRestMethod -method 'PUT' -url $url -accept $accept -credentials $credentials
+		}	
+		return $setAdapterStopMonitoringResponse
 	}
 }
 
@@ -1263,6 +1449,140 @@ function getNodeStatus {
 # /api/maintenanceschedules ---------------------------------------------------------------------------------------------------
 
 # /api/notifications ----------------------------------------------------------------------------------------------------------
+function getNotificationRules {
+	<#
+		.SYNOPSIS
+			get the status of the node
+		.DESCRIPTION
+			If the status is ONLINE if all the services are running and responsive. else status is OFFLINE 
+		.EXAMPLE
+			getNodeStatus -resthost $resthost -credentials $vropscreds
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.NOTES
+			Added in version 0.3.5
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/notifications/rules'
+		if ($token -ne $null) {
+			$getNotificationRulesresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getNotificationRulesresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getNotificationRulesresponse
+	}
+}
+
+function addNotificationRule {
+	<#
+		.SYNOPSIS
+			Adds Properties to a Resource. 
+		.DESCRIPTION
+			Adds Properties to a Resource. 
+		.EXAMPLE
+			addProperties -resthost $resthost -token $token -objectid 8014d795-18e4-42d5-a264-89f6b47f4d8e -body $body
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER contenttype
+			Analogous to the header parameter 'Content-Type' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER objectid
+			The vROps ID of the object for which the properties are being added.
+		.PARAMETER body
+			Body content that describes the property/properties being added to the object
+		.NOTES
+			Added in version 0.1
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')]$contenttype = 'json',
+		[parameter(Mandatory=$true)][String]$body
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/notifications/rules'
+		if ($token -ne $null) {
+			$addNotificationRulesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -token $token -body $body -contenttype $contenttype
+		}
+		else {
+			$addNotificationRulesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -credentials $credentials -body $body -contenttype $contenttype
+		}
+		return $addNotificationRulesresponse
+	}
+}
+
+function updateNotificationRule {
+	<#
+		.SYNOPSIS
+			Adds Properties to a Resource. 
+		.DESCRIPTION
+			Adds Properties to a Resource. 
+		.EXAMPLE
+			addProperties -resthost $resthost -token $token -objectid 8014d795-18e4-42d5-a264-89f6b47f4d8e -body $body
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER contenttype
+			Analogous to the header parameter 'Content-Type' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER objectid
+			The vROps ID of the object for which the properties are being added.
+		.PARAMETER body
+			Body content that describes the property/properties being added to the object
+		.NOTES
+			Added in version 0.1
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')]$contenttype = 'json',
+		[parameter(Mandatory=$true)][String]$body
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/notifications/rules'
+		if ($token -ne $null) {
+			$updateNotificationRulesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -token $token -body $body -contenttype $contenttype
+		}
+		else {
+			$updateNotificationRulesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -credentials $credentials -body $body -contenttype $contenttype
+		}
+		return $updateNotificationRulesresponse
+	}
+}
 
 # /api/recommendations --------------------------------------------------------------------------------------------------------
 
