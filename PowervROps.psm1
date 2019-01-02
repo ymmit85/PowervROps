@@ -1443,7 +1443,100 @@ function getNodeStatus {
 		return $getNodeStatusresponse
 	}
 }
+# /casa -------------------------------------------------------------------------------------------------------------
+function getPakList {
+	<#
+		.SYNOPSIS
+			get the status of the node
+		.DESCRIPTION
+			If the status is ONLINE if all the services are running and responsive. else status is OFFLINE 
+		.EXAMPLE
+			getNodeStatus -resthost $resthost -credentials $vropscreds
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.NOTES
+			Added in version 0.3.5
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/casa/upgrade/cluster/pak/reserved/list'
+		if ($token -ne $null) {
+			$getPakListResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getPakListResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getPakListResponse
+	}
+}
 
+function getPakStatus {
+	<#
+		.SYNOPSIS
+			Gets information about a specific Service that is part of the vRealize Operations Manager stack..
+		.DESCRIPTION
+			Gets information about a specific Service that is part of the vRealize Operations Manager stack..
+		.EXAMPLE
+			getServiceInfo -resthost $resthost -credentials $vropscreds -service
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER name
+			Name of service to recieve details for.
+		.NOTES
+			Added in version 0.3.5
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$pakID,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/casa/upgrade/cluster/pak/' + $pakID + '/status'
+		if ($token -ne $null) {
+			$getPakStatusResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getPakStatusResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getPakStatusResponse
+	}
+}
+
+function getPakDistributionStatus {
+
+	Param (
+		[parameter(Mandatory=$true)]$pakStatusResponse
+	)
+	Process {
+		Foreach ($slice in $pakStatusResponse.slices) {
+			$slice.slice_address
+			$slice.document
+		}
+	}
+}
 # /api/events -----------------------------------------------------------------------------------------------------------------
 
 # /api/maintenanceschedules ---------------------------------------------------------------------------------------------------
