@@ -1862,6 +1862,51 @@ function downloadReport {
 		return $downloadReportresponse
 	}
 }
+function deleteReport {
+	<#
+		.SYNOPSIS
+			Deletes report by it's identifier.
+		.DESCRIPTION
+			Deletes report by it's identifier.
+		.EXAMPLE
+			deleteReport -token $token -resthost $resthost -reportid $reportid 
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER reportid
+			The vROps ID of the report to be generated.
+		.NOTES
+			Requires full testing and cleaner output validating deletion of report.
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$true)][String]$reportid
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/reports/' + $reportid
+		if ($token -ne $null) {
+			$restheaders = @{}
+			$restheaders.add('Authorization',('vRealizeOpsToken ' + $token))
+			$deleteReportresponse = invoke-webrequest -uri $url -header $restheaders -method 'DELETE'
+		}
+		else {
+			$deleteReportresponse = invoke-webrequest -uri $url -credential $credentials -method 'DELETE'
+
+		}	
+		return $deleteReportresponse
+	}
+}
+
 function getReport {
 	<#
 		.SYNOPSIS
@@ -1904,6 +1949,45 @@ function getReport {
 	}
 }
 
+function getReports {
+	<#
+		.SYNOPSIS
+			Gets the Reports based on the Report Query Spec provided. 
+			If the query spec is not provided, all Reports present in the system are returned.
+		.DESCRIPTION
+			Gets all reports created in system
+		.EXAMPLE
+			getReports -token $token -resthost $resthost
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.NOTES
+			Requires update to allow additional params.
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/reports'
+		if ($token -ne $null) {
+			$getReportsresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getReportsresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getReportsresponse
+	}
+}
 # /api/resources -------------------------------------------------------------------------------------------------------------- 
 
 function addProperties {
