@@ -1100,15 +1100,33 @@ function getUserGroups {
 # /api/collectorgroups --------------------------------------------------------------------------------------------------------
 
 function getCollectorGroups {
+		<#
+		.SYNOPSIS
+			Enumerates all the Collector Groups defined in the system.
+		.DESCRIPTION
+			Enumerates all the Collector Groups defined in the system.
+		.EXAMPLE
+			getCollectorGroups -resthost $resthost -token $token
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.NOTES
+	#>
 Param	(
 	[parameter(Mandatory=$false)]$credentials,
 	[parameter(Mandatory=$true)][String]$resthost,
 	[parameter(Mandatory=$false)]$token,
-	[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
-	[parameter(Mandatory=$false)]$collectorid
-)
+	[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
 
-$url = 'https://' + $resthost + '/suite-api/api/collectorgroups/'
+$url = 'https://' + $resthost + '/suite-api/api/collectorgroups'
 
 if ($token -ne $null) {
 	$getCollectorGroups = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
@@ -1119,6 +1137,129 @@ else {
 return $getCollectorGroups
 }
 
+function getCollectorGroup {
+		<#
+		.SYNOPSIS
+			Gets details of a particular Collector Group in the system.
+		.DESCRIPTION
+			Gets details of a particular Collector Group in the system.
+		.EXAMPLE
+			getCollectorGroup -resthost $resthost -token $token -id $id
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER id
+			ID of the collector group to retrieve.
+		.NOTES
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$false)]$id
+	)
+	
+	$url = 'https://' + $resthost + '/suite-api/api/collectorgroups/' + $id
+	
+	if ($token -ne $null) {
+		$getCollectorGroupresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+	}
+	else {
+		$getCollectorGroupresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+	}	
+	return $getCollectorGroupresponse
+	}
+
+	function deleteCollectorGroup {
+		<#
+			.SYNOPSIS
+				Deletes Collector Group from the system using its identifier..
+			.DESCRIPTION
+				Deletes Collector Group from the system using its identifier..
+			.EXAMPLE
+				deleteCollecotrGroup -resthost $resthost -token $token -id $id
+			.PARAMETER credentials
+				A set of PS Credentials used to authenticate against the vROps endpoint.
+			.PARAMETER token
+				If token based authentication is being used (as opposed to credential based authentication)
+				then the token returned from the acquireToken cmdlet should be used.
+			.PARAMETER resthost
+				FQDN of the vROps instance or cluster to operate against.
+			.PARAMETER accept
+				Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+				However, the module has only been tested against json.
+			.PARAMETER id
+				ID of the collector to fromve group.
+			.PARAMETER collectorid
+				ID of the collector group to remove collector from.
+			.NOTES
+		#>
+		Param	(
+			[parameter(Mandatory=$false)]$credentials,
+			[parameter(Mandatory=$true)][String]$resthost,
+			[parameter(Mandatory=$false)]$token,
+			[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+			[parameter(Mandatory=$true)]$collectorid
+		)
+		$url = 'https://' + $resthost + '/suite-api/api/collectorgroups/' + $id
+		if ($token -ne $null) {
+			$deleteCollectorfromGroupresponse = invokeRestMethod -method 'DELETE' -url $url -accept $accept -token $token
+		}
+		else {
+			$deleteCollectorfromGroupresponse = invokeRestMethod -method 'DELETE' -url $url -accept $accept -credentials $credentials
+		}	
+		return $deleteCollectorfromGroupresponse
+	}
+
+	function addCollectortoGroup {
+		<#
+			.SYNOPSIS
+				Adds Collector Group from the system using its identifier..
+			.DESCRIPTION
+				Adds Collector Group from the system using its identifier..
+			.EXAMPLE
+				addCollectortoGroup -resthost $resthost -token $token -id $id -collectorid $collectorid
+			.PARAMETER credentials
+				A set of PS Credentials used to authenticate against the vROps endpoint.
+			.PARAMETER token
+				If token based authentication is being used (as opposed to credential based authentication)
+				then the token returned from the acquireToken cmdlet should be used.
+			.PARAMETER resthost
+				FQDN of the vROps instance or cluster to operate against.
+			.PARAMETER accept
+				Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+				However, the module has only been tested against json.
+			.PARAMETER id
+				ID of the collector to add to collector group.
+			.PARAMETER collector
+				ID of the collector group to add collector into.
+			.NOTES
+		#>
+		Param	(
+			[parameter(Mandatory=$false)]$credentials,
+			[parameter(Mandatory=$true)][String]$resthost,
+			[parameter(Mandatory=$false)]$token,
+			[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+			[parameter(Mandatory=$true)]$collectorid,
+			[parameter(Mandatory=$true)]$id
+		)
+		$url = 'https://' + $resthost + '/suite-api/api/collectorgroups/' + $id + '/collector/' + $collectorid
+		if ($token -ne $null) {
+			$addCollectorToGroupresponse = invokeRestMethod -method 'PUT' -url $url -accept $accept -token $token
+		}
+		else {
+			$addCollectorToGroupresponse = invokeRestMethod -method 'PUT' -url $url -accept $accept -credentials $credentials
+		}	
+		return $addCollectorToGroupresponse
+	}
 
 # /api/collectors -------------------------------------------------------------------------------------------------------------
 
