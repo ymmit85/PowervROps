@@ -1,18 +1,19 @@
-# |----------------------------------------------------------------------------------------------------------------------------|
-# | Module Name: PowervROps.psm1                                                           									   |
-# | Author: Andy Davies (andyd@vmware.com)                                                                        			   |
-# | Date: 13th February 2018                                                                                   				   |
-# | Description: PowerShell module that enables the use of the vROPs API via PowerShell cmdlets								   |
-# | Version: 0.4.1                                                                                              		   |
-# |----------------------------------------------------------------------------------------------------------------------------|
-<#2018 Update
-Updated /api/collectorgroups
-Added getSymptomDefinitions tested
-getserviceinfo tested
-getservicesinfo tested
-getauthsources tested
-getauthsource tested
+<#
+.SYNOPSIS  
+    PowerShell module that enables the use of the vROPs API via PowerShell cmdlets 
+.DESCRIPTION
+.NOTES
+    Version:        0.5.0
+	Author:         Andy Davies (andyd@vmware.com)
+	Github:         andyvmware
+	
+	Author:         Tim Willimas (tim@ymmit.net)
+    Twitter:        @ymmit85
+	Github:         ymmit85
 
+.LINK
+    https://github.com/andydvmware/PowervROps
+    https://github.com/ymmit85/PowervROps
 #>
 
 ################################################
@@ -380,7 +381,7 @@ function getAdapterInstances {
 		.PARAMETER adapterID
 			The name of the adapter ID to filter.
 		.NOTES
-			Added in version 0.2
+			
 	#>
 	Param	(
 		[parameter(Mandatory=$false)]$credentials,
@@ -429,7 +430,7 @@ function setAdapterInMaintenance {
 		.PARAMETER minutes
 			Duration of maintenance window in mintes,
 		.NOTES
-			Added in version 0.2
+			
 	#>
 	Param	(
 		[parameter(Mandatory=$false)]$credentials,
@@ -477,7 +478,7 @@ function setAdapterEndMaintenance {
 		.PARAMETER adapterID
 			The name of the adapter type to filter
 		.NOTES
-			Added in version 0.2
+			
 	#>
 	Param	(
 		[parameter(Mandatory=$false)]$credentials,
@@ -898,9 +899,9 @@ function releaseToken {
 function getAuthSources {
 	<#
 		.SYNOPSIS
-			Lists all the available auth sources in the system. . 
+			Lists all the available auth sources in the system.
 		.DESCRIPTION
-			Lists all the available auth sources in the system. . 
+			Lists all the available auth sources in the system.
 		.EXAMPLE
 			getAuthSources -resthost $resthost -credentials $credentials
 		.PARAMETER credentials
@@ -978,11 +979,11 @@ function getAuthSource {
 function getRoles {
 	<#
 		.SYNOPSIS
-			Retrieve information about a particular authentication source. 
+			Query for a list of application roles using the role names. 
 		.DESCRIPTION
-			Retrieve information about a particular authentication source. 
+			Query for a list of application roles using the role names. 
 		.EXAMPLE
-			getAuthSource -resthost $resthost -credentials $credentials -sourceID $sourceID
+			getRoles -resthost $resthost -credentials $credentials
 		.PARAMETER credentials
 			A set of PS Credentials used to authenticate against the vROps endpoint.
 		.PARAMETER token
@@ -993,16 +994,14 @@ function getRoles {
 			However, the module has only been tested against json.
 		.PARAMETER resthost
 			FQDN of the vROps instance or cluster to operate against.
-		.PARAMETER sourceID
-			Source ID of the Authentication Source.
-
 		.NOTES
+			Need to add in additioanl request params
+
 	#>
 	Param	(
 		[parameter(Mandatory=$false)]$credentials,
 		[parameter(Mandatory=$false)]$token,
 		[parameter(Mandatory=$true)][String]$resthost,
-		[parameter(Mandatory=$false)][String]$roleName,
 		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
 	)
 	Process {
@@ -1020,10 +1019,11 @@ function getRoles {
 function getUsers {
 	<#
 		.SYNOPSIS
-			Look up a list of users using the user identifiers or their role names.. If both ids and roleNames are not specified, information about all the local users are returned. . 
+			Look up a list of users using the user identifiers or their role names. 
 		.DESCRIPTION
-			Look up a list of users using the user identifiers or their role names.. If both ids and roleNames are not specified, information about all the local users are returned. . 
-		.EXAMPLE
+			Look up a list of users using the user identifiers or their role names. 
+			If both ids and roleNames are not specified, information about all the local users are returned. 
+ 		.EXAMPLE
 			getUser -resthost $resthost -credentials $credentials
 		.PARAMETER credentials
 			A set of PS Credentials used to authenticate against the vROps endpoint.
@@ -1035,8 +1035,8 @@ function getUsers {
 			However, the module has only been tested against json.
 		.PARAMETER resthost
 			FQDN of the vROps instance or cluster to operate against.
-
 		.NOTES
+			Need to add in additioanl request params
 	#>
 	Param	(
 		[parameter(Mandatory=$false)]$credentials,
@@ -1059,9 +1059,10 @@ function getUsers {
 function getUserGroups {
 	<#
 		.SYNOPSIS
-			Retrieve a list of local user groups using identifiers or names or all.. If none of the parameters are specified, all the user groups in the system are returned.  
+			Retrieve a list of local user groups using identifiers or names or all. 
 		.DESCRIPTION
-			Retrieve a list of local user groups using identifiers or names or all.. If none of the parameters are specified, all the user groups in the system are returned.  
+			Retrieve a list of local user groups using identifiers or names or all. 
+			If none of the parameters are specified, all the user groups in the system are returned.  
 		.EXAMPLE
 			getUserGroups -resthost $resthost -credentials $credentials
 		.PARAMETER credentials
@@ -1074,8 +1075,9 @@ function getUserGroups {
 			However, the module has only been tested against json.
 		.PARAMETER resthost
 			FQDN of the vROps instance or cluster to operate against.
-
 		.NOTES
+			Need to add in additioanl request params
+
 	#>
 	Param	(
 		[parameter(Mandatory=$false)]$credentials,
@@ -1098,15 +1100,33 @@ function getUserGroups {
 # /api/collectorgroups --------------------------------------------------------------------------------------------------------
 
 function getCollectorGroups {
+		<#
+		.SYNOPSIS
+			Enumerates all the Collector Groups defined in the system.
+		.DESCRIPTION
+			Enumerates all the Collector Groups defined in the system.
+		.EXAMPLE
+			getCollectorGroups -resthost $resthost -token $token
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.NOTES
+	#>
 Param	(
 	[parameter(Mandatory=$false)]$credentials,
 	[parameter(Mandatory=$true)][String]$resthost,
 	[parameter(Mandatory=$false)]$token,
-	[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
-	[parameter(Mandatory=$false)]$collectorid
-)
+	[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
 
-$url = 'https://' + $resthost + '/suite-api/api/collectorgroups/'
+$url = 'https://' + $resthost + '/suite-api/api/collectorgroups'
 
 if ($token -ne $null) {
 	$getCollectorGroups = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
@@ -1117,6 +1137,129 @@ else {
 return $getCollectorGroups
 }
 
+function getCollectorGroup {
+		<#
+		.SYNOPSIS
+			Gets details of a particular Collector Group in the system.
+		.DESCRIPTION
+			Gets details of a particular Collector Group in the system.
+		.EXAMPLE
+			getCollectorGroup -resthost $resthost -token $token -id $id
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER id
+			ID of the collector group to retrieve.
+		.NOTES
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$false)]$id
+	)
+	
+	$url = 'https://' + $resthost + '/suite-api/api/collectorgroups/' + $id
+	
+	if ($token -ne $null) {
+		$getCollectorGroupresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+	}
+	else {
+		$getCollectorGroupresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+	}	
+	return $getCollectorGroupresponse
+	}
+
+	function deleteCollectorGroup {
+		<#
+			.SYNOPSIS
+				Deletes Collector Group from the system using its identifier..
+			.DESCRIPTION
+				Deletes Collector Group from the system using its identifier..
+			.EXAMPLE
+				deleteCollecotrGroup -resthost $resthost -token $token -id $id
+			.PARAMETER credentials
+				A set of PS Credentials used to authenticate against the vROps endpoint.
+			.PARAMETER token
+				If token based authentication is being used (as opposed to credential based authentication)
+				then the token returned from the acquireToken cmdlet should be used.
+			.PARAMETER resthost
+				FQDN of the vROps instance or cluster to operate against.
+			.PARAMETER accept
+				Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+				However, the module has only been tested against json.
+			.PARAMETER id
+				ID of the collector to fromve group.
+			.PARAMETER collectorid
+				ID of the collector group to remove collector from.
+			.NOTES
+		#>
+		Param	(
+			[parameter(Mandatory=$false)]$credentials,
+			[parameter(Mandatory=$true)][String]$resthost,
+			[parameter(Mandatory=$false)]$token,
+			[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+			[parameter(Mandatory=$true)]$collectorid
+		)
+		$url = 'https://' + $resthost + '/suite-api/api/collectorgroups/' + $id
+		if ($token -ne $null) {
+			$deleteCollectorfromGroupresponse = invokeRestMethod -method 'DELETE' -url $url -accept $accept -token $token
+		}
+		else {
+			$deleteCollectorfromGroupresponse = invokeRestMethod -method 'DELETE' -url $url -accept $accept -credentials $credentials
+		}	
+		return $deleteCollectorfromGroupresponse
+	}
+
+	function addCollectortoGroup {
+		<#
+			.SYNOPSIS
+				Adds Collector Group from the system using its identifier..
+			.DESCRIPTION
+				Adds Collector Group from the system using its identifier..
+			.EXAMPLE
+				addCollectortoGroup -resthost $resthost -token $token -id $id -collectorid $collectorid
+			.PARAMETER credentials
+				A set of PS Credentials used to authenticate against the vROps endpoint.
+			.PARAMETER token
+				If token based authentication is being used (as opposed to credential based authentication)
+				then the token returned from the acquireToken cmdlet should be used.
+			.PARAMETER resthost
+				FQDN of the vROps instance or cluster to operate against.
+			.PARAMETER accept
+				Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+				However, the module has only been tested against json.
+			.PARAMETER id
+				ID of the collector to add to collector group.
+			.PARAMETER collector
+				ID of the collector group to add collector into.
+			.NOTES
+		#>
+		Param	(
+			[parameter(Mandatory=$false)]$credentials,
+			[parameter(Mandatory=$true)][String]$resthost,
+			[parameter(Mandatory=$false)]$token,
+			[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+			[parameter(Mandatory=$true)]$collectorid,
+			[parameter(Mandatory=$true)]$id
+		)
+		$url = 'https://' + $resthost + '/suite-api/api/collectorgroups/' + $id + '/collector/' + $collectorid
+		if ($token -ne $null) {
+			$addCollectorToGroupresponse = invokeRestMethod -method 'PUT' -url $url -accept $accept -token $token
+		}
+		else {
+			$addCollectorToGroupresponse = invokeRestMethod -method 'PUT' -url $url -accept $accept -credentials $credentials
+		}	
+		return $addCollectorToGroupresponse
+	}
 
 # /api/collectors -------------------------------------------------------------------------------------------------------------
 
@@ -1302,7 +1445,7 @@ function getServicesInfo {
 			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
 			However, the module has only been tested against json.
 		.NOTES
-			Added in version 0.3.5
+			
 	#>
 	Param	(
 		[parameter(Mandatory=$false)]$credentials,
@@ -1325,9 +1468,9 @@ function getServicesInfo {
 function getServiceInfo {
 	<#
 		.SYNOPSIS
-			Gets information about a specific Service that is part of the vRealize Operations Manager stack..
+			Gets information about a specific Service that is part of the vRealize Operations Manager stack.
 		.DESCRIPTION
-			Gets information about a specific Service that is part of the vRealize Operations Manager stack..
+			Gets information about a specific Service that is part of the vRealize Operations Manager stack.
 		.EXAMPLE
 			getServiceInfo -resthost $resthost -credentials $vropscreds -service
 		.PARAMETER credentials
@@ -1343,7 +1486,7 @@ function getServiceInfo {
 		.PARAMETER name
 			Name of service to recieve details for.
 		.NOTES
-			Added in version 0.3.5
+			
 	#>
 	Param	(
 		[parameter(Mandatory=$false)]$credentials,
@@ -1355,12 +1498,12 @@ function getServiceInfo {
 	Process {
 		$url = 'https://' + $resthost + '/suite-api/api/deployment/node/services/' + $name + '/info'
 		if ($token -ne $null) {
-			$getServicesInfoResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+			$getServiceInfoResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
 		}
 		else {
-			$getServicesInfoResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+			$getServiceInfoResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
 		}	
-		return $getServicesInfoResponse
+		return $getServiceInfoResponse
 	}
 }
 
@@ -1447,11 +1590,12 @@ function getNodeStatus {
 function getPakList {
 	<#
 		.SYNOPSIS
-			get the status of the node
+			Get list of Pak files deployed to nodes.
 		.DESCRIPTION
-			If the status is ONLINE if all the services are running and responsive. else status is OFFLINE 
+			Get list of Pak files deployed to nodes.
+			Used when following process on https://kb.vmware.com/s/article/2127895
 		.EXAMPLE
-			getNodeStatus -resthost $resthost -credentials $vropscreds
+			getPakList -resthost $resthost -credentials $vropscreds
 		.PARAMETER credentials
 			A set of PS Credentials used to authenticate against the vROps endpoint.
 		.PARAMETER token
@@ -1463,7 +1607,7 @@ function getPakList {
 			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
 			However, the module has only been tested against json.
 		.NOTES
-			Added in version 0.3.5
+			
 	#>
 	Param	(
 		[parameter(Mandatory=$false)]$credentials,
@@ -1486,11 +1630,12 @@ function getPakList {
 function getPakStatus {
 	<#
 		.SYNOPSIS
-			Gets information about a specific Service that is part of the vRealize Operations Manager stack..
+			Gets status of Pak file deployed to nodes in cluster..
 		.DESCRIPTION
-			Gets information about a specific Service that is part of the vRealize Operations Manager stack..
+			Gets status of Pak file deployed to nodes in cluster.
+			Used when following process on https://kb.vmware.com/s/article/2127895
 		.EXAMPLE
-			getServiceInfo -resthost $resthost -credentials $vropscreds -service
+			getPakStatus -resthost $resthost -credentials $vropscreds
 		.PARAMETER credentials
 			A set of PS Credentials used to authenticate against the vROps endpoint.
 		.PARAMETER token
@@ -1501,10 +1646,10 @@ function getPakStatus {
 		.PARAMETER accept
 			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
 			However, the module has only been tested against json.
-		.PARAMETER name
-			Name of service to recieve details for.
+		.PARAMETER pakId
+			Name of pak ID to search for.
 		.NOTES
-			Added in version 0.3.5
+			
 	#>
 	Param	(
 		[parameter(Mandatory=$false)]$credentials,
@@ -1526,6 +1671,18 @@ function getPakStatus {
 }
 
 function getPakDistributionStatus {
+		<#
+		.SYNOPSIS
+			Gets distribution status of pak file on nodes in cluster from function getPakstatus
+		.DESCRIPTION
+			Gets distribution status of pak file on nodes in cluster from function getPakstatus
+			Used when following process on https://kb.vmware.com/s/article/2127895
+		.EXAMPLE
+			getPakDistributionStatus -pakStatusResponse $pakStatusResponse
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.NOTES
+	#>
 
 	Param (
 		[parameter(Mandatory=$true)]$pakStatusResponse
@@ -1545,11 +1702,11 @@ function getPakDistributionStatus {
 function getNotificationRules {
 	<#
 		.SYNOPSIS
-			get the status of the node
+			Returns all the Notification Rules defined in the system
 		.DESCRIPTION
-			If the status is ONLINE if all the services are running and responsive. else status is OFFLINE 
+			Returns all the Notification Rules defined in the system
 		.EXAMPLE
-			getNodeStatus -resthost $resthost -credentials $vropscreds
+			getNotificationRules -resthost $resthost -credentials $vropscreds
 		.PARAMETER credentials
 			A set of PS Credentials used to authenticate against the vROps endpoint.
 		.PARAMETER token
@@ -1561,7 +1718,7 @@ function getNotificationRules {
 			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
 			However, the module has only been tested against json.
 		.NOTES
-			Added in version 0.3.5
+			
 	#>
 	Param	(
 		[parameter(Mandatory=$false)]$credentials,
@@ -1581,14 +1738,16 @@ function getNotificationRules {
 	}
 }
 
-function addNotificationRule {
+function createNotificationRule {
 	<#
 		.SYNOPSIS
-			Adds Properties to a Resource. 
+			Creates a new Notification Rule for a Notification Plugin Instance.
+			The Notification Plugin with which the Rule needs to be associated must be specified as part of the request.  
 		.DESCRIPTION
-			Adds Properties to a Resource. 
+			Creates a new Notification Rule for a Notification Plugin Instance.
+			The Notification Plugin with which the Rule needs to be associated must be specified as part of the request.  
 		.EXAMPLE
-			addProperties -resthost $resthost -token $token -objectid 8014d795-18e4-42d5-a264-89f6b47f4d8e -body $body
+			createNotificationRule -resthost $resthost -token $token -body $body
 		.PARAMETER credentials
 			A set of PS Credentials used to authenticate against the vROps endpoint.
 		.PARAMETER token
@@ -1602,12 +1761,10 @@ function addNotificationRule {
 		.PARAMETER contenttype
 			Analogous to the header parameter 'Content-Type' used in REST calls, valid values are xml or json.
 			However, the module has only been tested against json.
-		.PARAMETER objectid
-			The vROps ID of the object for which the properties are being added.
 		.PARAMETER body
 			Body content that describes the property/properties being added to the object
 		.NOTES
-			Added in version 0.1
+			
 	#>
 	Param	(
 		[parameter(Mandatory=$false)]$credentials,
@@ -1626,54 +1783,6 @@ function addNotificationRule {
 			$addNotificationRulesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -credentials $credentials -body $body -contenttype $contenttype
 		}
 		return $addNotificationRulesresponse
-	}
-}
-
-function updateNotificationRule {
-	<#
-		.SYNOPSIS
-			Adds Properties to a Resource. 
-		.DESCRIPTION
-			Adds Properties to a Resource. 
-		.EXAMPLE
-			addProperties -resthost $resthost -token $token -objectid 8014d795-18e4-42d5-a264-89f6b47f4d8e -body $body
-		.PARAMETER credentials
-			A set of PS Credentials used to authenticate against the vROps endpoint.
-		.PARAMETER token
-			If token based authentication is being used (as opposed to credential based authentication)
-			then the token returned from the acquireToken cmdlet should be used.
-		.PARAMETER resthost
-			FQDN of the vROps instance or cluster to operate against.
-		.PARAMETER accept
-			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
-			However, the module has only been tested against json.
-		.PARAMETER contenttype
-			Analogous to the header parameter 'Content-Type' used in REST calls, valid values are xml or json.
-			However, the module has only been tested against json.
-		.PARAMETER objectid
-			The vROps ID of the object for which the properties are being added.
-		.PARAMETER body
-			Body content that describes the property/properties being added to the object
-		.NOTES
-			Added in version 0.1
-	#>
-	Param	(
-		[parameter(Mandatory=$false)]$credentials,
-		[parameter(Mandatory=$false)]$token,
-		[parameter(Mandatory=$true)][String]$resthost,
-		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
-		[parameter(Mandatory=$false)][ValidateSet('xml','json')]$contenttype = 'json',
-		[parameter(Mandatory=$true)][String]$body
-	)
-	Process {
-		$url = 'https://' + $resthost + '/suite-api/api/notifications/rules'
-		if ($token -ne $null) {
-			$updateNotificationRulesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -token $token -body $body -contenttype $contenttype
-		}
-		else {
-			$updateNotificationRulesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -credentials $credentials -body $body -contenttype $contenttype
-		}
-		return $updateNotificationRulesresponse
 	}
 }
 
@@ -2963,11 +3072,11 @@ function getSuperMetrics {
 function getSymptomDefinitions {
 	<#
 		.SYNOPSIS
-			Returns a collection of Alert Definitions matching the search criteria specified.
+			Returns a collection of Symptom Definitions matching the search criteria specified.
 		.DESCRIPTION
-			Returns a collection of Alert Definitions matching the search criteria specified.
+			Returns a collection of Symptom Definitions matching the search criteria specified.
 		.EXAMPLE
-			getAlertDefinitions -resthost $resthost -token $token
+			getSymptomDefinitions -resthost $resthost -token $token -resourcekind $resourcekind
 		.PARAMETER credentials
 			A set of PS Credentials used to authenticate against the vROps endpoint.
 		.PARAMETER token
@@ -2985,8 +3094,10 @@ function getSymptomDefinitions {
 			Adapter Kind key of the Alert Definitions to search for
 		.PARAMETER resourcekind
 			Resource Kind key of the Alert Definitions to search for
+		.PARAMETER symptomdefinitionid
+			The identifier(s) of the symptom definitions to search for
 		.NOTES
-			Added in version 0.2
+			
 	#>
 	Param	(
 		[parameter(Mandatory=$false)]$credentials,
