@@ -3039,6 +3039,45 @@ function getSymptomDefinitions {
 
 # /api/versions ---------------------------------------------------------------------------------------------------------------
 
+function getVersions {
+		<#
+		.SYNOPSIS
+			Gets the current version of the Service.
+		.DESCRIPTION
+			Gets the current version of the Service.
+		.EXAMPLE
+			getVersions -credentials $creds -resthost $resthost
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.NOTES
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/versions/current/'	
+		if ($token -ne $null) {
+			$getVersionsupresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getVersionsupresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getVersionsupresponse	
+	}
+
+}
+
 # /internal/resources ---------------------------------------------------------------------------------------------------------
 
 function getCustomGroup {
