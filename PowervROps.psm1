@@ -31,6 +31,7 @@ add-type @"
     }
 "@
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 function getTimeSinceEpoch {
 	<#
@@ -2442,6 +2443,7 @@ function deleteResource {
 		return $deleteResourceresponse
 	}
 }
+
 function getLatestStatsofResources {
 	<#
 		.SYNOPSIS
@@ -2486,6 +2488,114 @@ function getLatestStatsofResources {
 		return $getLatestStatsofResourcesresponse
 	}
 }
+
+function getLatestPropertiesofResources {
+	<#
+		.SYNOPSIS
+			Gets Latest properties of resources using the query spec that is specified.
+		.DESCRIPTION
+			Gets Latest properties of resources using the query spec that is specified.
+		.EXAMPLE
+			getLatestPropertiesofResources -resthost $resthost -token $token -objectid 80133295-18e4-42d5-a264-8af6b47f4d8e -statkey 'PowervROPsTesting|TestStat'
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER objectid
+			The vROps ID of the object for which the latest stats should be returned
+		.PARAMETER statkey
+			If supplied the response will be limited to the vROps statkey supplied
+		.NOTES
+
+		#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$true)][string]$objectid,	
+		[parameter(Mandatory=$true)]$statkey
+	)
+	Process {
+
+		$body = @{
+			'resourceIds' = @($objectid)
+			'propertyKeys' = @($statkey)
+			'others' = @()
+			'otherAttributes' = @()
+			} | ConvertTo-Json
+$body
+		$url = 'https://' + $resthost + '/suite-api/api/resources/properties/latest/query'
+		if ($token -ne $null) {
+			$getLatestPropertiesofResourcesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -token $token -body $body
+		}
+		else {
+			$getLatestPropertiesofResourcesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -credentials $credentials -body $body
+		}
+		return $getLatestPropertiesofResourcesresponse
+	}
+}
+
+function getLatestStatsofResources {
+	<#
+		.SYNOPSIS
+			Gets Latest stats of resources using the query spec that is specified.
+		.DESCRIPTION
+			Gets Latest stats of resources using the query spec that is specified.
+		.EXAMPLE
+			getLatestPropertiesofResources -resthost $resthost -token $token -objectid 80133295-18e4-42d5-a264-8af6b47f4d8e -statkey 'PowervROPsTesting|TestStat'
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER objectid
+			The vROps ID of the object for which the latest stats should be returned
+		.PARAMETER statkey
+			If supplied the response will be limited to the vROps statkey supplied
+		.NOTES
+
+		#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$true)][string]$objectid,	
+		[parameter(Mandatory=$true)]$statkey
+	)
+	Process {
+
+		$body = @{
+			'resourceId' = @($objectid)
+			'statKey' = @($statkey)
+			'metrics' = 'false'
+  			'currentOnly' = 'false'
+  			'maxSamples' = 1
+			} | ConvertTo-Json
+$body
+		$url = 'https://' + $resthost + '/suite-api/api/resources/stats/latest/query'
+		if ($token -ne $null) {
+			$getLatestStatsofResourcesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -token $token -body $body
+		}
+		else {
+			$getLatestStatsofResourcesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -credentials $credentials -body $body
+		}
+		return $getLatestStatsofResourcesresponse
+	}
+}
+
 function getRelationship {	
 	<#
 		.SYNOPSIS
