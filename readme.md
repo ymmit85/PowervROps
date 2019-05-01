@@ -17,6 +17,10 @@ Feature requests are welcome via the issues tracker on the projects page on GitH
 #### New Functions
 - getLatestPropertiesofResources
 - getLatestStatsofResources
+- getSystemAudit
+- getProductEdition
+- addGroupType
+
 
 
 ### 0.5.0
