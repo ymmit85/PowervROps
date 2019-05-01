@@ -32,6 +32,9 @@ add-type @"
 "@
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 
+#Default to TLS1.2 to support vROPS 7..5
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 function getTimeSinceEpoch {
 	<#
 		.SYNOPSIS
