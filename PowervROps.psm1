@@ -31,6 +31,7 @@ add-type @"
     }
 "@
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 #Default to TLS1.2 to support vROPS 7..5
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -261,6 +262,93 @@ function invokeRestMethod {
 
 function connectvROpsServer { # TBC
 }
+
+#/api/audit -------------------------------------------------------------------------------------------------------
+
+function getSystemAudit {
+	<#
+		.SYNOPSIS
+			Get system audit report.
+		.DESCRIPTION
+			Get system audit report.
+		.EXAMPLE
+			getSystemAudit -token $validtoken -resthost 'fqdn of vROps instance' -accept json
+		.EXAMPLE
+			getSystemAudit -credentials $validpscredentials -resthost 'fqdn of vROps instance' -accept xml
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.NOTES
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][switch]$ignoressl,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/audit/system'
+		if ($token -ne $null) {
+			$getSystemAuditresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getSystemAuditresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getSystemAuditresponse
+	}
+}
+
+#/api/product -------------------------------------------------------------------------------------------------------
+
+function getProductEdition {
+	<#
+		.SYNOPSIS
+			Get edition of product licensing.
+		.DESCRIPTION
+			Get edition of product licensing.
+		.EXAMPLE
+			getProductEdition -token $validtoken -resthost 'fqdn of vROps instance' -accept json
+		.EXAMPLE
+			getProductEdition -credentials $validpscredentials -resthost 'fqdn of vROps instance' -accept xml
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.NOTES
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][switch]$ignoressl,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/audit/system'
+		if ($token -ne $null) {
+			$getProductEditionResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getProductEditionResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getProductEditionResponse
+	}
+}
+
 #/api/actiondefinitions -------------------------------------------------------------------------------------------------------
 
 function getAllActions {
@@ -2147,6 +2235,56 @@ function getReports {
 }
 # /api/resources -------------------------------------------------------------------------------------------------------------- 
 
+function addGroupType {
+	<#
+		.SYNOPSIS
+			Add a new group type.
+		.DESCRIPTION
+			Add a new group type.
+		.EXAMPLE
+			addGroupType -resthost $resthost -token $token -name 'NewGroup'
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER objectid
+			Group Type name.
+		.NOTES
+
+		#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$true)]$name
+	)
+	Process {
+
+		$body = @{
+			'name' = $objectid
+			'others' = @()
+			'otherAttributes' = @()
+			} | ConvertTo-Json
+
+			$url = 'https://' + $resthost + '/suite-api/api/resources/groups/types'
+
+		if ($token -ne $null) {
+			$addGroupTyperesponse = invokeRestMethod -method 'POST' -url $url -accept $accept -token $token -body $body
+		}
+		else {
+			$addGroupTyperesponse = invokeRestMethod -method 'POST' -url $url -accept $accept -credentials $credentials -body $body
+		}
+		return $addGroupTyperesponse
+	}
+}
+
 function addProperties {
 	<#
 		.SYNOPSIS
@@ -2490,6 +2628,7 @@ function deleteResource {
 		return $deleteResourceresponse
 	}
 }
+
 function getLatestStatsofResources {
 	<#
 		.SYNOPSIS
@@ -2534,6 +2673,114 @@ function getLatestStatsofResources {
 		return $getLatestStatsofResourcesresponse
 	}
 }
+
+function getLatestPropertiesofResources {
+	<#
+		.SYNOPSIS
+			Gets Latest properties of resources using the query spec that is specified.
+		.DESCRIPTION
+			Gets Latest properties of resources using the query spec that is specified.
+		.EXAMPLE
+			getLatestPropertiesofResources -resthost $resthost -token $token -objectid 80133295-18e4-42d5-a264-8af6b47f4d8e -statkey 'PowervROPsTesting|TestStat'
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER objectid
+			The vROps ID of the object for which the latest stats should be returned
+		.PARAMETER statkey
+			If supplied the response will be limited to the vROps statkey supplied
+		.NOTES
+
+		#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$true)][string]$objectid,	
+		[parameter(Mandatory=$true)]$statkey
+	)
+	Process {
+
+		$body = @{
+			'resourceIds' = @($objectid)
+			'propertyKeys' = @($statkey)
+			'others' = @()
+			'otherAttributes' = @()
+			} | ConvertTo-Json
+
+			$url = 'https://' + $resthost + '/suite-api/api/resources/properties/latest/query'
+		if ($token -ne $null) {
+			$getLatestPropertiesofResourcesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -token $token -body $body
+		}
+		else {
+			$getLatestPropertiesofResourcesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -credentials $credentials -body $body
+		}
+		return $getLatestPropertiesofResourcesresponse
+	}
+}
+
+function getLatestStatsofResources {
+	<#
+		.SYNOPSIS
+			Gets Latest stats of resources using the query spec that is specified.
+		.DESCRIPTION
+			Gets Latest stats of resources using the query spec that is specified.
+		.EXAMPLE
+			getLatestPropertiesofResources -resthost $resthost -token $token -objectid 80133295-18e4-42d5-a264-8af6b47f4d8e -statkey 'PowervROPsTesting|TestStat'
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER objectid
+			The vROps ID of the object for which the latest stats should be returned
+		.PARAMETER statkey
+			If supplied the response will be limited to the vROps statkey supplied
+		.NOTES
+
+		#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$true)][string]$objectid,	
+		[parameter(Mandatory=$true)]$statkey
+	)
+	Process {
+
+		$body = @{
+			'resourceId' = @($objectid)
+			'statKey' = @($statkey)
+			'metrics' = 'false'
+  			'currentOnly' = 'false'
+  			'maxSamples' = 1
+			} | ConvertTo-Json
+
+			$url = 'https://' + $resthost + '/suite-api/api/resources/stats/latest/query'
+		if ($token -ne $null) {
+			$getLatestStatsofResourcesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -token $token -body $body
+		}
+		else {
+			$getLatestStatsofResourcesresponse = invokeRestMethod -method 'POST' -url $url -accept $accept -credentials $credentials -body $body
+		}
+		return $getLatestStatsofResourcesresponse
+	}
+}
+
 function getRelationship {	
 	<#
 		.SYNOPSIS
@@ -3508,6 +3755,3 @@ export-modulemember -function 'update*'
 export-modulemember -function 'mark*'
 export-modulemember -function 'unmark*'
 export-modulemember -function 'modify*'
-
-
-

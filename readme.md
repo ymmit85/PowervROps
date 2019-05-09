@@ -3,9 +3,28 @@
 ## Overview
 PowervROps is a module written for PowerShell that can be used to access various elements of the vRealize Operations Manager API via PowerShell functions.
 Feature requests are welcome via the issues tracker on the projects page on GitHub.
-Currently development has been completed against vROPs 6.7 & 7.0 & Powershell 5.1.
 
-##Latest Updates
+## Compatibility
+- vROPs 7.0
+- vROPs 7.5
+- PowerShell 5.1
+
+## ChangeLog
+### 0.6.0
+- Support for vROPs 7.5
+- Default to TLS 1.2 
+
+#### New Functions
+- getLatestPropertiesofResources
+- getLatestStatsofResources
+- getSystemAudit
+- getProductEdition
+- addGroupType
+
+
+
+### 0.5.0
+#### New functions
 The following functions have been added in version 0.5.0, most have been tested but there are a couple that still require modification to allow additonal parameter inputs.
 
 - getAdapterInstances
