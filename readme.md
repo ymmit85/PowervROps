@@ -9,6 +9,7 @@ Currently development has been completed against vROPs 6.7 & 7.0 & Powershell 5.
 The following functions have been added in version 0.5.0, most have been tested but there are a couple that still require modification to allow additonal parameter inputs.
 
 - getAdapterInstances
+- deleteAdapterInstance
 - setAdapterInMaintenance
 - setAdapterEndMaintenance
 - setAdapterStartMonitoring

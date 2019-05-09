@@ -408,6 +408,51 @@ function getAdapterInstances {
 	}
 }
 
+function deleteAdapterInstance {
+	<#
+		.SYNOPSIS
+			Deletes an adapter instance using an identifier.
+		.DESCRIPTION
+			Deletes an adapter instance using an identifier.
+		.EXAMPLE
+			deleteAdapterInstances -resthost $resthost -token $token -adapterID
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.PARAMETER adapterID
+			The name of the adapter ID to delete.
+		.NOTES
+			
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$false)][switch]$ignoressl,
+		[parameter(Mandatory=$false)]$adapterID
+		)
+	Process {
+
+			$url = 'https://' + $resthost + '/suite-api/api/adapters/' + $adapterID
+
+		if ($token -ne $null) {
+			$deleteAdapterInstancesresponse = invokeRestMethod -method 'DELETE' -url $url -accept $accept -token $token
+		}
+		else {
+			$deleteAdapterInstancesresponse = invokeRestMethod -method 'DELETE' -url $url -accept $accept -credentials $credentials
+		}	
+		return $deleteAdapterInstancesresponse
+	}
+}
+
 
 function setAdapterInMaintenance {
 	<#
