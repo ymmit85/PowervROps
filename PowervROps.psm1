@@ -36,9 +36,6 @@ add-type @"
 [Net.SecurityProtocolType]::Tls11,
 [Net.SecurityProtocolType]::Ssl3
 
-#Default to TLS1.2 to support vROPS 7..5
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
 function getTimeSinceEpoch {
 	<#
 		.SYNOPSIS
