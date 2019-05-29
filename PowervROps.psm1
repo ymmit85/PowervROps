@@ -31,7 +31,10 @@ add-type @"
     }
 "@
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+[Net.ServicePointManager]::SecurityProtocol = `
+[Net.SecurityProtocolType]::Tls12,
+[Net.SecurityProtocolType]::Tls11,
+[Net.SecurityProtocolType]::Ssl3
 
 function getTimeSinceEpoch {
 	<#
