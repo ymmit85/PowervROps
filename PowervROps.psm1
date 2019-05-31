@@ -75,6 +75,31 @@ function getTimeSinceEpoch {
 	}
 }
 
+function convertEpoch {
+	<#
+		.SYNOPSIS
+			Function to convert epoch time to normal
+		.DESCRIPTION
+			Function to convert epoch time to normal
+		.EXAMPLE
+			convertEpoch
+		.EXAMPLE
+			convertEpoch -epochTime 1537615930
+
+		.PARAMETER epochTime
+			Epoch Time object
+		.NOTES
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$epochTime
+		)
+	process {
+		$convertedDate = (Get-Date 01.01.1970)+([System.TimeSpan]::FromMilliseconds($epochTime))
+		$convertedDate = $convertedDate.ToString("HH:mm:ss dd-MM-yyyy")
+		return $convertedDate
+	}
+}
+
 function setRestHeaders {
 	<#
 		.SYNOPSIS
@@ -3755,3 +3780,4 @@ export-modulemember -function 'update*'
 export-modulemember -function 'mark*'
 export-modulemember -function 'unmark*'
 export-modulemember -function 'modify*'
+export-modulemember -function 'convert*'
