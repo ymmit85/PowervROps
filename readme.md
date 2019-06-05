@@ -10,10 +10,13 @@ Feature requests are welcome via the issues tracker on the projects page on GitH
 - PowerShell 5.1
 
 ## ChangeLog
+### 0.6.3
+#### New Functions 
+- getGlobalSettings
+
 ### 0.6.2
 #### New Functions 
 - deleteAdapterInstance
-
 
 ### 0.6.0
 - Support for vROPs 7.5
@@ -25,8 +28,6 @@ Feature requests are welcome via the issues tracker on the projects page on GitH
 - getSystemAudit
 - getProductEdition
 - addGroupType
-
-
 
 ### 0.5.0
 #### New functions

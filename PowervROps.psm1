@@ -1747,6 +1747,44 @@ function getNodeStatus {
 		return $getNodeStatusresponse
 	}
 }
+
+function getGlobalsettings {
+	<#
+		.SYNOPSIS
+			get the global settings configured within vROPs
+		.DESCRIPTION
+			get the global settings configured within vROPs
+		.EXAMPLE
+			getGlobalsettings -resthost $resthost -credentials $vropscreds
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+		.NOTES
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json'
+	)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/deployment/config/globalsettings'
+		if ($token -ne $null) {
+			$getGlobalsettingsresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getGlobalsettingsresponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}	
+		return $getGlobalsettingsresponse
+	}
+}
 # /casa -------------------------------------------------------------------------------------------------------------
 function getPakList {
 	<#
