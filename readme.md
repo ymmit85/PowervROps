@@ -10,6 +10,17 @@ Feature requests are welcome via the issues tracker on the projects page on GitH
 - PowerShell 5.1
 
 ## ChangeLog
+<<<<<<< HEAD
+=======
+### 0.6.3
+#### New Functions 
+- getGlobalSettings
+
+### 0.6.2
+#### New Functions 
+- deleteAdapterInstance
+
+>>>>>>> 8ccc3b08b163d0fd74e78a60c84c6a9abea544e2
 ### 0.6.0
 - Support for vROPs 7.5
 - Default to TLS 1.2 
@@ -20,8 +31,6 @@ Feature requests are welcome via the issues tracker on the projects page on GitH
 - getSystemAudit
 - getProductEdition
 - addGroupType
-
-
 
 ### 0.5.0
 #### New functions
