@@ -434,8 +434,6 @@ function getResourcesWithAdapterAndResourceKind {
 			getResourcesWithAdapterAndResourceKind -resthost $h -credentials $cred -adapterKindKey vmware -resourceKind virtualmachine -identifiers [VMEntityObjectID]=vm-2162
 		.EXAMPLE
 			getResourcesWithAdapterAndResourceKind -resthost $h -credentials $cred -adapterKindKey vmware -resourceKind Datastore -identifiers [VMEntityName]=Local_R0
-		.EXAMPLE
-			getResources -resthost $resthost -token $token -objectid 8014d795-18e4-42d5-a264-89f6b47f4d8e
 		.PARAMETER credentials
 			A set of PS Credentials used to authenticate against the vROps endpoint.
 		.PARAMETER token
