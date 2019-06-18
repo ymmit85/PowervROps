@@ -10,7 +10,7 @@ Feature requests are welcome via the issues tracker on the projects page on GitH
 - PowerShell 5.1
 
 ## ChangeLog
-=======
+
 ### 0.6.3
 #### New Functions 
 - getGlobalSettings
