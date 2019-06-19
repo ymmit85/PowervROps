@@ -11,6 +11,10 @@ Feature requests are welcome via the issues tracker on the projects page on GitH
 
 ## ChangeLog
 
+### 0.6.4
+#### New Functions 
+- getResourcesWithAdapterAndResourceKind
+
 ### 0.6.3
 #### New Functions 
 - getGlobalSettings

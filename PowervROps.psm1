@@ -423,6 +423,76 @@ function getAllActions {
 
 # /api/adapterkinds -----------------------------------------------------------------------------------------------------------
 
+function getResourcesWithAdapterAndResourceKind {
+	<#
+		.SYNOPSIS
+			Query for Resources within a particular Adapter Kind and Resource Kind.
+		.DESCRIPTION
+			Optionally filter these resources based on resource name. The resource name (specified as a query parameter) will be used for doing a partial match.
+			However, if the resource identifiers and their values are specified, name is ignored and the API enforces all the mandatory (both uniquely identifying and required) identifiers are specified. This allows for looking up a single resource using a ResourceKey and allows the translation between a ResourceKey and a Resource UUID
+		.EXAMPLE
+			getResourcesWithAdapterAndResourceKind -resthost $h -credentials $cred -adapterKindKey vmware -resourceKind virtualmachine -identifiers [VMEntityObjectID]=vm-2162
+		.EXAMPLE
+			getResourcesWithAdapterAndResourceKind -resthost $h -credentials $cred -adapterKindKey vmware -resourceKind Datastore -identifiers [VMEntityName]=Local_R0
+		.PARAMETER credentials
+			A set of PS Credentials used to authenticate against the vROps endpoint.
+		.PARAMETER token
+			If token based authentication is being used (as opposed to credential based authentication)
+			then the token returned from the acquireToken cmdlet should be used.
+		.PARAMETER resthost
+			FQDN of the vROps instance or cluster to operate against.
+		.PARAMETER accept
+			Analogous to the header parameter 'Accept' used in REST calls, valid values are xml or json.
+			However, the module has only been tested against json.
+
+		.PARAMETER resourceKind
+			The resourceKind of the objects to query. This will return multiple objects. Examples of resourceKind are:
+				eg: ClusterComputeResource
+				eg: VirtualMachine
+
+		.PARAMETER adapterKindKey
+			The adapterKind to query.
+				eg: VMWARE
+		.PARAMETER identifiers
+			Resource Identifiers where the Key represents the Resource Identifier Key and the Value represents the Resource Identifier value
+				eg: [VMEntityObjectID]=vm-2162
+				eg: [VMEntityName]=vcsa
+				eg: [VMEntityVCID]=41da59b4-64e7-4e83-85e0-1b194d9a08e4
+		.NOTES
+	#>
+	Param	(
+		[parameter(Mandatory=$false)]$credentials,
+		[parameter(Mandatory=$false)]$token,
+		[parameter(Mandatory=$true)][String]$resthost,
+		[parameter(Mandatory=$false)][ValidateSet('xml','json')][string]$accept = 'json',
+		[parameter(Mandatory=$false)][String]$name,
+		[parameter(Mandatory=$false)][String]$resourceKind,
+		[parameter(Mandatory=$false)][string]$adapterKindKey,
+		[parameter(Mandatory=$false)][string]$identifiers
+		)
+	Process {
+		$url = 'https://' + $resthost + '/suite-api/api/adapterkinds/'
+
+		if ($adapterKindKey -ne "") {
+			$url += $adapterKindKey
+		}
+		if ($resourceKind -ne "") {
+			$url += '/resourcekinds/' + $resourceKind + '/resources'
+		}
+		if ($identifiers -ne "") {
+			$url += '?identifiers' + $identifiers
+		}
+		$url
+		if ($token -ne $null) {
+			$getResourcesWithAdapterAndResourceKindResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -token $token
+		}
+		else {
+			$getResourcesWithAdapterAndResourceKindResponse = invokeRestMethod -method 'GET' -url $url -accept $accept -credentials $credentials
+		}
+		return $getResourcesWithAdapterAndResourceKindResponse.resourcelist
+	}
+}
+
 # /api/adapters ---------------------------------------------------------------------------------------------------------------
 
 function enumerateAdapterInstances {
@@ -3042,6 +3112,7 @@ function getResources { # Need additional tests for pagesize and pagenumber
 		return $getResourcesresponse
 	}
 }
+
 function getStatsForResources { # No test, and no documentation
 	<#
 		.SYNOPSIS
